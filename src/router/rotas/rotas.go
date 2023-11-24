@@ -16,10 +16,12 @@ type Rota struct {
 
 // Configurar coloca todas as rotas dentro do router
 func Configurar(r *mux.Router) *mux.Router {
-	rotas := rotasUsuarios
+	rotas := rotasUsuarios // Assume que há uma variável chamada rotasUsuarios que contém um array de objetos do tipo Rota
 
 	for _, rota := range rotas {
 		r.HandleFunc(rota.Uri, rota.Funcao).Methods(rota.Metodo)
+		// Para cada rota, adiciona um handler para a URI e método especificados,
+		// que chama a função associada à rota quando a rota é acessada.
 
 	}
 	return r
