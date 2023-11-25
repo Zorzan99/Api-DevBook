@@ -1,9 +1,12 @@
 package modelos
 
 import (
+	"api/src/seguranca"
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
 )
 
 // Usuario representa um usuário utilizando a rede social
@@ -21,7 +24,9 @@ func (usuario *Usuario) Preparar(etapa string) error {
 	if erro := usuario.validar(etapa); erro != nil {
 		return erro
 	}
-	usuario.formatar()
+	if erro := usuario.formatar(etapa); erro != nil {
+		return erro
+	}
 	return nil
 }
 
@@ -36,6 +41,11 @@ func (usuario *Usuario) validar(etapa string) error {
 	if usuario.Email == "" {
 		return errors.New("O email é obrigatório e não pode estar em branco")
 	}
+
+	if erro := checkmail.ValidateFormat(usuario.Email); erro != nil {
+		return errors.New("O e-mail inserido é inválido")
+	}
+
 	if etapa == "cadastro" && usuario.Senha == "" {
 		return errors.New("A senha é obrigatória e não pode estar em branco")
 	}
@@ -43,8 +53,25 @@ func (usuario *Usuario) validar(etapa string) error {
 }
 
 // formatar remove espaços em branco extras dos campos do usuário
-func (usuario *Usuario) formatar() {
+// formatar é um método do tipo Usuario que formata os campos do usuário.
+// Ele recebe uma etapa como parâmetro para determinar as ações específicas a serem executadas.
+func (usuario *Usuario) formatar(etapa string) error {
+	// Remover espaços em branco dos campos do usuário
 	usuario.Nome = strings.TrimSpace(usuario.Nome)
 	usuario.Nick = strings.TrimSpace(usuario.Nick)
 	usuario.Email = strings.TrimSpace(usuario.Email)
+
+	// Verificar se a etapa é "cadastro" para realizar a formatação adicional durante o processo de cadastro
+	if etapa == "cadastro" {
+		// Gerar o hash da senha utilizando a função Hash do pacote seguranca
+		senhaComHash, erro := seguranca.Hash(usuario.Senha)
+		if erro != nil {
+			return erro
+		}
+		// Atualizar a senha do usuário com o hash gerado
+		usuario.Senha = string(senhaComHash)
+	}
+
+	// Retornar nil para indicar que a formatação foi concluída sem erros
+	return nil
 }

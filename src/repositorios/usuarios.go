@@ -131,3 +131,28 @@ func (repositorio usuarios) Deletar(ID uint64) error {
 	}
 	return nil
 }
+
+// BuscarPorEmail busca um usuário no banco de dados pelo seu endereço de e-mail.
+func (repositorio usuarios) BuscarPorEmail(email string) (modelos.Usuario, error) {
+	// Executar uma consulta SQL para selecionar o ID e a senha do usuário com o e-mail fornecido
+	linha, erro := repositorio.db.Query("SELECT id, senha FROM usuarios WHERE email = ?", email)
+	if erro != nil {
+		// Em caso de erro na execução da consulta, retornar um usuário vazio e o erro
+		return modelos.Usuario{}, erro
+	}
+	defer linha.Close() // Fechar a consulta após o término da função
+
+	var usuario modelos.Usuario
+
+	// Verificar se há pelo menos uma linha de resultado
+	if linha.Next() {
+		// Ler os valores da linha (ID e senha) e atribuí-los à struct Usuario
+		if erro = linha.Scan(&usuario.ID, &usuario.Senha); erro != nil {
+			// Em caso de erro ao escanear os valores, retornar um usuário vazio e o erro
+			return modelos.Usuario{}, erro
+		}
+	}
+
+	// Retornar o usuário encontrado (ou vazio se não encontrado) e nil para indicar que não houve erros
+	return usuario, nil
+}

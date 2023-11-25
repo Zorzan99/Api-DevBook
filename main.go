@@ -10,6 +10,7 @@ import (
 
 func main() {
 	config.Carregar()
+	fmt.Println(config.SecretKey)
 
 	r := router.Gerar() // Gera as rotas utilizando a função Gerar() do pacote de roteamento
 
